@@ -161,7 +161,7 @@ contract TokenTimelock is Ownable {
 
     uint256 constant public AMOUNT_PER_RELEASE = 12000000 *10**18;
     uint256 constant public PERIOD = 2592000; // 30 days
-    uint256 constant public START_TIME = 1616630400; // 00:00:00 GMT 25/3/2021
+    uint256 constant public START_TIME = 1623715200; // 00:00:00 GMT 15/6/2021
     address constant public PVU_TOKEN = 0x77B73d0A3925C54833D3a68d6E0c8F8CF8e568f5;
 
     uint256 public lockToken = 240000000 * 10**18;
@@ -199,6 +199,10 @@ contract TokenTimelock is Ownable {
     
     function getTimeReleaseNext() public view returns(uint256) {
         return START_TIME + PERIOD.mul(countRelease);
+    }
+
+    function setTokenAddress(address _addr) external onlyOwner {
+        PVU_TOKEN = _addr;
     }
     
     function getBalance() public view returns (uint256) {
