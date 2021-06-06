@@ -166,14 +166,14 @@ contract TokenTimelock is Ownable {
     uint256 constant public AMOUNT_PER_RELEASE_1 = 200000 *10**18;
     uint256 constant public AMOUNT_PER_RELEASE_2 = 400000 *10**18;
 
-    uint256 constant public PERIOD = 120; // 30 days
-    uint256 constant public START_TIME = 1622871756; // 00:00:00 GMT 15/6/2021
-    address public PVU_TOKEN = 0x764DcC7F507857A603629fc7EBDCA6A93452c739;
+    uint256 constant public PERIOD = 2592000; // 30 days
+    uint256 constant public START_TIME = 1631707200; // 12:00:00 GMT 15/9/2021
+    address public PVU_TOKEN = 0x77b73d0a3925c54833d3a68d6e0c8f8cf8e568f5;
 
     uint256 public lockToken = 5400000 * 10**18;
     uint256 public nextRelease;
     uint256 public countRelease;
-    address public beneficiary = 0x6aD22C344D5b114a67E543Ba33D8451FEde6Ad4a;
+    address public beneficiary = 0x8C63272811d4644B62825C0b110FFaAeB77a5d95;
     
     constructor() public {
         nextRelease = START_TIME + PERIOD.mul(countRelease);
@@ -182,27 +182,27 @@ contract TokenTimelock is Ownable {
     /**
     * @dev Throws if called by any account other than the beneficiaries.
     */
-    modifier onlyOwner() {
-        require(msg.sender == beneficiary, "Ownable: caller is not the beneficiaries");
+    modifier onlyBeneficiary() {
+        require(msg.sender == beneficiary, "Ownable: caller is not the beneficiary");
         _;
     }
 
     /**
      * @notice Transfers tokens held by timelock to beneficiary.
      */
-    function release() public onlyOwner {
+    function release() public onlyBeneficiary {
         require(block.timestamp >= START_TIME + PERIOD.mul(countRelease), "TokenTimelock: current time is before release time");
         
         if (countRelease < 12) {
             uint256 cliff = block.timestamp.sub(nextRelease).div(PERIOD) + 1;
             uint256 amount = AMOUNT_PER_RELEASE_1.mul(cliff);
             if (amount >= lockToken) {
-                ERC20(PVU_TOKEN).transfer(owner(), lockToken);
+                ERC20(PVU_TOKEN).transfer(beneficiary, lockToken);
                 lockToken = 0;
             } else {
                 nextRelease = nextRelease + PERIOD.mul(cliff);
                 lockToken = lockToken.sub(amount);
-                ERC20(PVU_TOKEN).transfer(owner(), amount); 
+                ERC20(PVU_TOKEN).transfer(beneficiary, amount); 
             }
             
             countRelease += cliff;
@@ -213,12 +213,12 @@ contract TokenTimelock is Ownable {
             uint256 cliff = block.timestamp.sub(nextRelease).div(PERIOD) + 1;
             uint256 amount = AMOUNT_PER_RELEASE_2.mul(cliff);
             if (amount >= lockToken) {
-                ERC20(PVU_TOKEN).transfer(owner(), lockToken);
+                ERC20(PVU_TOKEN).transfer(beneficiary, lockToken);
                 lockToken = 0;
             } else {
                 nextRelease = nextRelease + PERIOD.mul(cliff);
                 lockToken = lockToken.sub(amount);
-                ERC20(PVU_TOKEN).transfer(owner(), amount); 
+                ERC20(PVU_TOKEN).transfer(beneficiary, amount); 
             }
             
             countRelease += cliff;
@@ -238,7 +238,7 @@ contract TokenTimelock is Ownable {
         PVU_TOKEN = _addr;
     }
     
-    function setBeneficiaries(address _addr) external onlyOwner {
+    function setBeneficiary(address _addr) external onlyOwner {
         beneficiary = _addr;
     }
     
